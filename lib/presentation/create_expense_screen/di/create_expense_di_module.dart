@@ -6,6 +6,6 @@ class CreateExpenseDiModule extends Module {
 
   @override
   void onProvide() {
-    provide(() => CreateExpenseBloc(inject()));
+    provide(() => CreateExpenseBloc(inject(), inject()));
   }
 }

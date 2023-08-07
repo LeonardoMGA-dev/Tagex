@@ -9,8 +9,8 @@ abstract class Bloc<T> implements Disposable, Initializable {
     initialState: initializeState(),
   );
 
-  updateState(T Function(T state) updater) {
-    _state.update(updater);
+  void updateState(T Function(T state) updater) {
+    _state.update((state) => interceptState(updater(state)));
   }
 
   Widget build(Widget Function(T state) builder) {
@@ -23,7 +23,19 @@ abstract class Bloc<T> implements Disposable, Initializable {
     return controller;
   }
 
+  T interceptState(T state) => state;
+
   T initializeState();
+
+  void reactTo<S>(
+    StateFlow<S> stateFlow,
+    T Function(T state, S data) updater,
+  ) {
+    _state.reactTo<S>(
+      stateFlow,
+      (state, data) => interceptState(updater(state, data)),
+    );
+  }
 
   @override
   void initialize() {}

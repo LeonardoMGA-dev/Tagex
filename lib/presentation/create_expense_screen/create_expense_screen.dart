@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 import 'package:scope_injector/flutter_scope.dart';
+import 'package:tagex/presentation/components/tag.dart';
 import 'package:tagex/presentation/create_expense_screen/bloc/create_expense_bloc.dart';
-import 'package:tagex/presentation/create_expense_screen/di/CreateExpenseDiModule.dart';
+import 'package:tagex/presentation/create_expense_screen/di/create_expense_di_module.dart';
 
 class CreateExpenseScreen extends StatefulWidget {
   const CreateExpenseScreen({Key? key}) : super(key: key);
@@ -12,6 +14,15 @@ class CreateExpenseScreen extends StatefulWidget {
 
 class _CreateExpenseScreenState extends ScopedState<CreateExpenseScreen> {
   late final CreateExpenseBloc _bloc = inject();
+
+  late final FocusNode _nameFocusNode = FocusNode();
+  late final FocusNode _amountFocusNode = FocusNode();
+  late final FocusNode _dateFocusNode = FocusNode();
+
+  @override
+  void initState() {
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,59 +55,81 @@ class _CreateExpenseScreenState extends ScopedState<CreateExpenseScreen> {
                       ],
                     ),
                   ),
-                  Autocomplete(
-                    fieldViewBuilder: (BuildContext context,
-                        TextEditingController textEditingController,
-                        FocusNode focusNode,
-                        VoidCallback onFieldSubmitted) {
-                      return TextField(
-                        onChanged: (value) {
-                          _bloc.nameController.text = value;
-                        },
-                        autofocus: true,
-                        decoration: InputDecoration(
-                          label: const Text("Name"),
-                          errorText: state.errors["name"],
-                        ),
-                        controller: textEditingController,
-                        focusNode: focusNode,
-                      );
-                    },
-                    optionsBuilder: (TextEditingValue textEditingValue) {
-                      if (textEditingValue.text == '') {
-                        return const Iterable<String>.empty();
-                      } else {
-                        List<String> matches = <String>[];
-                        matches.addAll(["sushi", "Gasolina"]);
-                        matches.retainWhere((s) {
-                          return s
-                              .toLowerCase()
-                              .contains(textEditingValue.text.toLowerCase());
-                        });
-                        return matches;
-                      }
-                    },
+                  TextField(
+                    autofocus: true,
+                    decoration: InputDecoration(
+                      label: const Text("Name"),
+                      errorText: state.errors["name"],
+                    ),
+                    controller: _bloc.nameController,
+                    focusNode: _nameFocusNode,
+                    textInputAction: TextInputAction.next,
                   ),
                   TextField(
-                    controller: _bloc.amountController,
-                    decoration: InputDecoration(
-                      labelText: "Amount",
-                      errorText: state.errors["amount"],
+                      textInputAction: TextInputAction.next,
+                      controller: _bloc.amountController,
+                      decoration: InputDecoration(
+                        labelText: "Amount",
+                        errorText: state.errors["amount"],
+                      ),
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      )),
+                  Focus(
+                    onFocusChange: (hasFocus) {
+                      if (hasFocus) {
+                        _dateFocusNode.unfocus();
+                        _amountFocusNode.unfocus();
+                        _nameFocusNode.unfocus();
+                      }
+                    },
+                    child: TextField(
+                      onTap: () async {
+                        DateTime? date = await DatePicker.showDateTimePicker(
+                          context,
+                          showTitleActions: true,
+                          minTime: DateTime(2021, 1, 1),
+                          maxTime: DateTime.now(),
+                          onChanged: (date) {
+                            print('change $date');
+                          },
+                          onConfirm: (date) {
+                            print('confirm $date');
+                          },
+                          currentTime: DateTime.now(),
+                        );
+                        if (date != null) {
+                          _bloc.dateController.text = date.toString();
+                        }
+                      },
+                      controller: _bloc.dateController,
+                      readOnly: true,
+                      decoration: InputDecoration(
+                        labelText: "Date",
+                        errorText: state.errors["date"],
+                      ),
                     ),
                   ),
-                  const TextField(
-                    decoration: InputDecoration(
-                      labelText: "Date",
-                    ),
+                  const SizedBox(
+                    height: 8.0,
                   ),
-                  const TextField(
-                    decoration: InputDecoration(
-                      labelText: "Tags",
-                    ),
+                  Wrap(
+                    children: [
+                      for (final tag in state.tagsSuggestions)
+                        Padding(
+                          padding: const EdgeInsets.all(4.0),
+                          child: Tag(
+                            text: tag,
+                          ),
+                        ),
+                    ],
                   ),
                   ElevatedButton(
-                    onPressed: () {
-                      _bloc.addExpense();
+                    onPressed: () async {
+                      final isCreated = await _bloc.addExpense();
+                      if (isCreated) {
+                        Navigator.pop(context);
+                      }
                     },
                     child: const Text("Add"),
                   ),

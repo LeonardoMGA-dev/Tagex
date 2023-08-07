@@ -10,4 +10,6 @@ abstract class ExpenseRepository {
     required DateTime date,
     required List<String> tags,
   });
+
+  Future<List<String>> getTagsSuggestions(String expenseName);
 }

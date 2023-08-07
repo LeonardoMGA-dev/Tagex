@@ -1,24 +1,28 @@
 import 'package:tagex/domain/expense/usecase/add_expense_usecase.dart';
+import 'package:tagex/domain/expense/usecase/get_tag_suggestion_usecase.dart';
 import 'package:tagex/presentation/create_expense_screen/state/create_expense_ui_state.dart';
 import 'package:tagex/presentation/util/bloc.dart';
 
 class CreateExpenseBloc extends Bloc<CreateExpenseUiState> {
-  late final AddExpenseUseCase _addExpenseUseCase;
+  final AddExpenseUseCase _addExpenseUseCase;
+  final GetTagsSuggestionsUseCase _getTagsSuggestionsUseCase;
 
   late final nameController = useTextEditingController();
   late final amountController = useTextEditingController();
   late final dateController = useTextEditingController();
 
-  CreateExpenseBloc(this._addExpenseUseCase);
+  CreateExpenseBloc(this._addExpenseUseCase, this._getTagsSuggestionsUseCase);
 
-  void addExpense() {
+  Future<bool> addExpense() async {
     final name = nameController.text;
+    print(await _getTagsSuggestionsUseCase.execute(name));
     final amount = amountController.text;
     final date = dateController.text;
     final tags = <String>[];
     final errors = validate(name: name, amount: amount, date: date);
     if (errors.isNotEmpty) {
       updateState((state) => state.copy(errors: errors));
+      return false;
     } else {
       _addExpenseUseCase.execute(
         name: name,
@@ -26,6 +30,7 @@ class CreateExpenseBloc extends Bloc<CreateExpenseUiState> {
         date: DateTime.now(),
         tags: tags,
       );
+      return true;
     }
   }
 
@@ -51,10 +56,15 @@ class CreateExpenseBloc extends Bloc<CreateExpenseUiState> {
   }
 
   @override
-  void dispose() {
-    print("CreateExpenseBloc disposed");
-  }
+  initializeState() => CreateExpenseUiState();
 
   @override
-  initializeState() => CreateExpenseUiState();
+  void initialize() {
+    super.initialize();
+    nameController.addListener(() async {
+      final tags =
+          await _getTagsSuggestionsUseCase.execute(nameController.text);
+      updateState((state) => state.copy(tagsSuggestions: tags));
+    });
+  }
 }

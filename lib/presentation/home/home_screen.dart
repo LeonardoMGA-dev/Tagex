@@ -18,7 +18,8 @@ class _HomeScreenState extends ScopedState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return _homeBloc.state.build((state) {
+    return _homeBloc.build((state) {
+      print(state.expenses);
       return Column(
         children: [
           Expanded(
@@ -88,10 +89,10 @@ class _HomeScreenState extends ScopedState<HomeScreen> {
                             children: [
                               const Spacer(),
                               Column(
-                                children: const [
-                                  Text("Total"),
+                                children: [
+                                  const Text("Total"),
                                   Text(
-                                    "\$1,000.0",
+                                    "\$${state.total}",
                                   ),
                                 ],
                               ),
