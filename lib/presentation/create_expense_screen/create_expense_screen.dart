@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
+import 'package:omni_datetime_picker/omni_datetime_picker.dart';
 import 'package:scope_injector/flutter_scope.dart';
 import 'package:tagex/presentation/components/tag.dart';
 import 'package:tagex/presentation/create_expense_screen/bloc/create_expense_bloc.dart';
 import 'package:tagex/presentation/create_expense_screen/di/create_expense_di_module.dart';
+import 'package:tagex/presentation/create_expense_screen/state/create_expense_ui_state.dart';
 
 class CreateExpenseScreen extends StatefulWidget {
   const CreateExpenseScreen({Key? key}) : super(key: key);
@@ -13,16 +14,12 @@ class CreateExpenseScreen extends StatefulWidget {
 }
 
 class _CreateExpenseScreenState extends ScopedState<CreateExpenseScreen> {
+  // dependency injection
   late final CreateExpenseBloc _bloc = inject();
 
   late final FocusNode _nameFocusNode = FocusNode();
   late final FocusNode _amountFocusNode = FocusNode();
   late final FocusNode _dateFocusNode = FocusNode();
-
-  @override
-  void initState() {
-    super.initState();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -85,19 +82,8 @@ class _CreateExpenseScreenState extends ScopedState<CreateExpenseScreen> {
                     },
                     child: TextField(
                       onTap: () async {
-                        DateTime? date = await DatePicker.showDateTimePicker(
-                          context,
-                          showTitleActions: true,
-                          minTime: DateTime(2021, 1, 1),
-                          maxTime: DateTime.now(),
-                          onChanged: (date) {
-                            print('change $date');
-                          },
-                          onConfirm: (date) {
-                            print('confirm $date');
-                          },
-                          currentTime: DateTime.now(),
-                        );
+                        DateTime? date =
+                            await showOmniDateTimePicker(context: context);
                         if (date != null) {
                           _bloc.dateController.text = date.toString();
                         }
@@ -111,19 +97,41 @@ class _CreateExpenseScreenState extends ScopedState<CreateExpenseScreen> {
                     ),
                   ),
                   const SizedBox(
-                    height: 8.0,
+                    height: 10.0,
+                  ),
+                  _buildTagSelector(state),
+                  const SizedBox(
+                    height: 10.0,
+                  ),
+                  const Text(
+                    "Suggestions",
+                  ),
+                  const SizedBox(
+                    height: 5.0,
                   ),
                   Wrap(
                     children: [
-                      for (final tag in state.tagsSuggestions)
+                      for (final tag in state.tags)
                         Padding(
                           padding: const EdgeInsets.all(4.0),
                           child: Tag(
-                            text: tag,
+                            isSuggestion: tag.coincidences > 0,
+                            text: tag.name,
+                            onTap: (name) {
+                              _bloc.addTag(tag);
+                            },
+                            onLongPress: (name) {
+                              _bloc.addAllSuggestions();
+                            },
                           ),
                         ),
                     ],
                   ),
+                  const Divider(),
+                  const SizedBox(
+                    height: 10.0,
+                  ),
+                  const Spacer(),
                   ElevatedButton(
                     onPressed: () async {
                       final isCreated = await _bloc.addExpense();
@@ -140,6 +148,44 @@ class _CreateExpenseScreenState extends ScopedState<CreateExpenseScreen> {
         }),
       ),
     );
+  }
+
+  Column _buildTagSelector(CreateExpenseUiState state) {
+    return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      "Selected tags",
+                    ),
+                    const SizedBox(
+                      height: 5.0,
+                    ),
+                    Builder(
+                      builder: (context) {
+                        if (state.selectedTags.isEmpty) {
+                          return const Padding(
+                            padding: EdgeInsets.all(5.0),
+                            child: Text("No tags selected", style: TextStyle(color: Colors.grey),),
+                          );
+                        }
+                        return Wrap(
+                          children: [
+                            for (final tag in state.selectedTags)
+                              Padding(
+                                padding: const EdgeInsets.all(4.0),
+                                child: Tag(
+                                  text: tag.name,
+                                  onTap: (name) {
+                                    _bloc.removeTag(tag);
+                                  },
+                                ),
+                              ),
+                          ],
+                        );
+                      }
+                    ),
+                  ],
+                );
   }
 
   @override

@@ -7,6 +7,12 @@ class ExpenseRepositoryImp extends ExpenseRepository {
   final MutableStateFlow<List<ExpenseModel>> _expensesFlow =
       MutableStateFlow(initialState: expenses);
 
+  final Set<String> _tags = expenses
+      .map((expense) => expense.tags)
+      .expand((tags) => tags)
+      .toSet()
+      .cast<String>();
+
   @override
   StateFlow<List<ExpenseModel>> get expensesFlow => _expensesFlow;
 
@@ -17,6 +23,7 @@ class ExpenseRepositoryImp extends ExpenseRepository {
     required DateTime date,
     required List<String> tags,
   }) {
+    _tags.addAll(tags);
     _expensesFlow.update((expenses) {
       expenses.add(ExpenseModel(
         title: name,
@@ -29,41 +36,70 @@ class ExpenseRepositoryImp extends ExpenseRepository {
   }
 
   @override
-  Future<List<String>> getTagsSuggestions(String expenseName) async {
-    return predictTagsByExpenseName(expenseName)
-        .map((tag) => tag['name'] as String)
-        .toList();
+  Future<List<TagModel>> getTags(String expenseName) async {
+    final tags = predictTagsByExpenseName(expenseName);
+    // add tags that are not in the list
+    for (var tag in _tags) {
+      final int tagIndex = tags.indexWhere((t) => t.name == tag);
+      if (tagIndex == -1) {
+        tags.add(TagModel(name: tag, coincidences: 0));
+      }
+    }
+    return tags;
   }
 
-  List<Map<String, dynamic>> predictTagsByExpenseName(String expenseName) {
-    final List<Map<String, dynamic>> tags = [];
-    // get expenses that contain the expenseName
+  List<TagModel> predictTagsByExpenseName(String expenseName) {
+    final List<TagModel> tags = [];
     final expensesWithExpenseName = expenses
         .where((expense) =>
-            expense.title.toLowerCase().contains(expenseName.toLowerCase()))
+            expenseName.toLowerCase().isSimilar(expense.title.toLowerCase()))
         .toList();
-
-    // loop through the expenses and get the tags and their count
-    expensesWithExpenseName.forEach((expense) {
+    for (var expense in expensesWithExpenseName) {
       for (var tag in expense.tags) {
-        // check if the tag is already in the tags list
-        final int tagIndex = tags.indexWhere((t) => t['name'] == tag);
+        final int tagIndex = tags.indexWhere((t) => t.name == tag);
         if (tagIndex == -1) {
-          // if the tag is not in the tags list, add it
-          tags.add({'name': tag, 'count': 1});
+          tags.add(TagModel(name: tag, coincidences: 1));
         } else {
-          // if the tag is in the tags list, increment the count
-          tags[tagIndex]['count']++;
+          tags[tagIndex] = tags[tagIndex].copyWith(
+            coincidences: tags[tagIndex].coincidences + 1,
+          );
         }
       }
-    });
-
-    // sort the tags by count
-    tags.sort((a, b) => b['count'].compareTo(a['count']));
-    // return the first 5 tags
-    if (tags.length < 5) {
-      return tags;
     }
-    return tags.sublist(0, 5);
+    tags.sort((a, b) => b.coincidences.compareTo(a.coincidences));
+    return tags;
+  }
+}
+
+class TagModel {
+  final String name;
+  final int coincidences;
+
+  TagModel({required this.name, required this.coincidences});
+
+  TagModel copyWith({
+    String? name,
+    int? coincidences,
+  }) {
+    return TagModel(
+      name: name ?? this.name,
+      coincidences: coincidences ?? this.coincidences,
+    );
+  }
+}
+
+extension Util on String {
+  bool isSimilar(String other) {
+    double calculateJaccardSimilarity(String sentence1, String sentence2) {
+      final words1 = sentence1.split(' ');
+      final words2 = sentence2.split(' ');
+
+      final intersection = words1.toSet().intersection(words2.toSet());
+      final union = words1.toSet().union(words2.toSet());
+
+      return intersection.length / union.length;
+    }
+
+    return calculateJaccardSimilarity(this, other) > 0.1;
   }
 }

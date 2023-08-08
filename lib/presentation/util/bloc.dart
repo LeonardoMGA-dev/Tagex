@@ -9,6 +9,12 @@ abstract class Bloc<T> implements Disposable, Initializable {
     initialState: initializeState(),
   );
 
+  Future<T> get state async => _state.stream.first;
+
+  Future<E> withState<E>( E Function(T state) callback) async {
+    return callback(await state);
+  }
+
   void updateState(T Function(T state) updater) {
     _state.update((state) => interceptState(updater(state)));
   }

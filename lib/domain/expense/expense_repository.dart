@@ -1,4 +1,5 @@
 import 'package:tagex/core/state_flow.dart';
+import 'package:tagex/data/expense/expense_repository.dart';
 import 'package:tagex/domain/expense/model/expense_model.dart';
 
 abstract class ExpenseRepository {
@@ -11,5 +12,5 @@ abstract class ExpenseRepository {
     required List<String> tags,
   });
 
-  Future<List<String>> getTagsSuggestions(String expenseName);
+  Future<List<TagModel>> getTags(String expenseName);
 }
