@@ -12,7 +12,7 @@ class HomeBloc extends Bloc<HomeUiState> {
     HomeUiState state,
   ) {
     updateState((state) {
-      return state.copyWith();
+      return state;
     });
   }
 

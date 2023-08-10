@@ -7,11 +7,27 @@ class HomeUiState {
     0.0,
     (previousValue, element) => previousValue + element.amount,
   );
+  late final List<List<ExpenseModel>> groupedExpenses =
+      _groupExpensesByDay(expenses);
 
   HomeUiState({
     this.expenses = const [],
     this.isLoading = false,
   });
+
+  List<List<ExpenseModel>> _groupExpensesByDay(List<ExpenseModel> expenses) {
+    final Map<String, List<ExpenseModel>> groupedMap = {};
+    expenses.forEach((expense) {
+      final key = "${expense.date.day}/${expense.date.month}/${expense.date.year}";
+      if (groupedMap.containsKey(key)) {
+        groupedMap[key]!.add(expense);
+      } else {
+        groupedMap[key] = [expense];
+      }
+    });
+    print(groupedMap);
+    return groupedMap.values.toList();
+  }
 
   HomeUiState copyWith({
     List<ExpenseModel>? expenses,

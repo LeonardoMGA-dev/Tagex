@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:scope_injector/flutter_scope.dart';
-import 'package:tagex/presentation/components/tag.dart';
+import 'package:tagex/presentation/components/expense.dart';
+import 'package:tagex/presentation/components/expense_batch.dart';
 import 'package:tagex/presentation/create_expense_screen/create_expense_screen.dart';
 import 'package:tagex/presentation/home/di/home_di_module.dart';
 
@@ -19,7 +20,6 @@ class _HomeScreenState extends ScopedState<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return _homeBloc.build((state) {
-      print(state.expenses);
       return Column(
         children: [
           Expanded(
@@ -103,24 +103,18 @@ class _HomeScreenState extends ScopedState<HomeScreen> {
                     ),
                     Expanded(
                       child: ListView.builder(
-                          itemCount: state.expenses.length,
+                          itemCount: state.groupedExpenses.length,
                           itemBuilder: (context, index) {
-                            final expense = state.expenses[index];
-                            if (index == state.expenses.length - 1) {
-                              return Padding(
-                                padding: const EdgeInsets.only(bottom: 65.0),
-                                child: _buildExpense(
-                                    title: expense.title,
-                                    amount: expense.amount.toString(),
-                                    date: expense.date.toString(),
-                                    tags: expense.tags),
-                              );
-                            }
-                            return _buildExpense(
-                                title: expense.title,
-                                amount: expense.amount.toString(),
-                                date: expense.date.toString(),
-                                tags: expense.tags);
+                            final expenses = state.groupedExpenses[index];
+                            final padding = index == state.expenses.length - 1
+                                ? const EdgeInsets.only(bottom: 65.0)
+                                : null;
+                            return Padding(
+                              padding: padding ?? EdgeInsets.zero,
+                              child: ExpenseBatch(
+                                expenses: expenses,
+                              ),
+                            );
                           }),
                     ),
                   ],
@@ -145,49 +139,6 @@ class _HomeScreenState extends ScopedState<HomeScreen> {
         ],
       );
     });
-  }
-
-  Widget _buildExpense({
-    required String title,
-    required String amount,
-    required String date,
-    required List<String> tags,
-  }) {
-    _homeBloc;
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 5),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(
-            height: 10,
-          ),
-          Row(
-            children: [
-              Text(date),
-              const Expanded(
-                  child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 8.0),
-                child: Divider(),
-              )),
-              Text("\$$amount"),
-            ],
-          ),
-          const SizedBox(
-            height: 10,
-          ),
-          Wrap(
-            spacing: 5,
-            runSpacing: 5,
-            children: tags.map((e) => Tag(text: e)).toList(),
-          ),
-        ],
-      ),
-    );
   }
 
   @override
