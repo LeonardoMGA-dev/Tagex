@@ -1,11 +1,16 @@
 import 'package:tagex/core/state_flow.dart';
 import 'package:tagex/data/expense/expenses.dart';
+import 'package:tagex/data/persistence/db.dart';
 import 'package:tagex/domain/expense/expense_repository.dart';
 import 'package:tagex/domain/expense/model/expense_model.dart';
 
 class ExpenseRepositoryImp extends ExpenseRepository {
+  final TagexDatabase _database;
+
+  ExpenseRepositoryImp(this._database);
+
   final MutableStateFlow<List<ExpenseModel>> _expensesFlow =
-      MutableStateFlow(initialState: expenses);
+      MutableStateFlow(initialState: []);
 
   final Set<String> _tags = expenses
       .map((expense) => expense.tags)
@@ -22,8 +27,9 @@ class ExpenseRepositoryImp extends ExpenseRepository {
     required double amount,
     required DateTime date,
     required List<String> tags,
-  }) {
-    _tags.addAll(tags);
+  }) async {
+    await _database.createExpense(
+        name: name, amount: amount, date: date, tags: tags);
     _expensesFlow.update((expenses) {
       expenses.add(ExpenseModel(
         title: name,
@@ -68,6 +74,12 @@ class ExpenseRepositoryImp extends ExpenseRepository {
     }
     tags.sort((a, b) => b.coincidences.compareTo(a.coincidences));
     return tags;
+  }
+
+  @override
+  Future<void> fetchExpenses() async {
+    final expensesFromDb = await _database.getExpenses();
+    _expensesFlow.update((expenses) => expenses..addAll(expensesFromDb));
   }
 }
 

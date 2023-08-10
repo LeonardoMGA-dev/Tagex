@@ -61,6 +61,9 @@ class _CreateExpenseScreenState extends ScopedState<CreateExpenseScreen> {
                     controller: _bloc.nameController,
                     focusNode: _nameFocusNode,
                     textInputAction: TextInputAction.next,
+                    onChanged: (text) {
+                      _bloc.getTagSuggestions(text);
+                    },
                   ),
                   TextField(
                       textInputAction: TextInputAction.next,
@@ -127,7 +130,6 @@ class _CreateExpenseScreenState extends ScopedState<CreateExpenseScreen> {
                         ),
                     ],
                   ),
-                  const Divider(),
                   const SizedBox(
                     height: 10.0,
                   ),
@@ -152,40 +154,41 @@ class _CreateExpenseScreenState extends ScopedState<CreateExpenseScreen> {
 
   Column _buildTagSelector(CreateExpenseUiState state) {
     return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      "Selected tags",
-                    ),
-                    const SizedBox(
-                      height: 5.0,
-                    ),
-                    Builder(
-                      builder: (context) {
-                        if (state.selectedTags.isEmpty) {
-                          return const Padding(
-                            padding: EdgeInsets.all(5.0),
-                            child: Text("No tags selected", style: TextStyle(color: Colors.grey),),
-                          );
-                        }
-                        return Wrap(
-                          children: [
-                            for (final tag in state.selectedTags)
-                              Padding(
-                                padding: const EdgeInsets.all(4.0),
-                                child: Tag(
-                                  text: tag.name,
-                                  onTap: (name) {
-                                    _bloc.removeTag(tag);
-                                  },
-                                ),
-                              ),
-                          ],
-                        );
-                      }
-                    ),
-                  ],
-                );
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          "Selected tags",
+        ),
+        const SizedBox(
+          height: 5.0,
+        ),
+        Builder(builder: (context) {
+          if (state.selectedTags.isEmpty) {
+            return const Padding(
+              padding: EdgeInsets.all(5.0),
+              child: Text(
+                "No tags selected",
+                style: TextStyle(color: Colors.grey),
+              ),
+            );
+          }
+          return Wrap(
+            children: [
+              for (final tag in state.selectedTags)
+                Padding(
+                  padding: const EdgeInsets.all(4.0),
+                  child: Tag(
+                    text: tag.name,
+                    onTap: (name) {
+                      _bloc.removeTag(tag);
+                    },
+                  ),
+                ),
+            ],
+          );
+        }),
+      ],
+    );
   }
 
   @override

@@ -5,7 +5,7 @@ class HomeDiModule extends Module {
   HomeDiModule(ScopedState scopedState) : super(scopedState);
 
   @override
-  void onProvide() {
-    provide(() => HomeBloc(inject()));
+  onProvide() {
+    provide(() => HomeBloc(inject(), inject()));
   }
 }

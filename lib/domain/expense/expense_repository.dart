@@ -12,5 +12,7 @@ abstract class ExpenseRepository {
     required List<String> tags,
   });
 
+  Future<void> fetchExpenses();
+
   Future<List<TagModel>> getTags(String expenseName);
 }

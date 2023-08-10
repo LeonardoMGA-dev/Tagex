@@ -36,7 +36,7 @@ class _HomeScreenState extends ScopedState<HomeScreen> {
                         children: [
                           Row(
                             children: [
-                              Expanded(
+                              Flexible(
                                 child: DropdownButtonFormField<String>(
                                   value: "monthly",
                                   items: const [
@@ -59,7 +59,7 @@ class _HomeScreenState extends ScopedState<HomeScreen> {
                               const SizedBox(
                                 width: 8.0,
                               ),
-                              Expanded(
+                              Flexible(
                                 child: DropdownButtonFormField<String>(
                                   items: const [
                                     DropdownMenuItem(
@@ -78,7 +78,6 @@ class _HomeScreenState extends ScopedState<HomeScreen> {
                                   onChanged: (value) {},
                                 ),
                               ),
-                              const Spacer(),
                               TextButton(
                                 onPressed: () {},
                                 child: const Icon(Icons.manage_search_outlined),

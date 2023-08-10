@@ -72,8 +72,8 @@ class CreateExpenseBloc extends Bloc<CreateExpenseUiState> {
       // remove the suggestions from the tags
       state.tags.removeWhere((suggestion) => suggestion.coincidences > 0);
       return state.copy(
-          selectedTags: [...state.selectedTags, ...suggestions],
-        );
+        selectedTags: [...state.selectedTags, ...suggestions],
+      );
     });
   }
 
@@ -98,18 +98,18 @@ class CreateExpenseBloc extends Bloc<CreateExpenseUiState> {
     return errors;
   }
 
-  @override
-  initializeState() => CreateExpenseUiState();
+  void getTagSuggestions(String expenseName) async {
+    final tags = await _getTagsSuggestionsUseCase.execute(expenseName);
+    updateState((state) => state.copy(tags: tags));
+  }
 
   @override
   void initialize() {
     super.initialize();
-    nameController.addListener(() async {
-      final tags =
-          await _getTagsSuggestionsUseCase.execute(nameController.text);
-      tagSuggestions.clear();
-      tagSuggestions.addAll(tags);
-      updateState((state) => state.copy(tags: tags));
-    });
+    getTagSuggestions("");
+    dateController.text = DateTime.now().toString();
   }
+
+  @override
+  initializeState() => CreateExpenseUiState();
 }
