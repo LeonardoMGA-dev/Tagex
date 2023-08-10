@@ -49,6 +49,7 @@ class MutableStateFlow<T> extends StateFlow<T> {
 
   void update(T Function(T state) modifyState) async {
     final _state = await stream.first;
+    print(_state);
     _controller.add(modifyState(_state));
   }
 

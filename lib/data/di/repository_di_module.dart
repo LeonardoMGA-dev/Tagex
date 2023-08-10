@@ -7,6 +7,6 @@ class RepositoryDiModule extends Module {
 
   @override
   void onProvide() {
-    provide<ExpenseRepository>(() => ExpenseRepositoryImp());
+    provide<ExpenseRepository>(() => ExpenseRepositoryImp(inject()));
   }
 }
