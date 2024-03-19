@@ -28,7 +28,7 @@ class _CreateExpenseScreenState extends ScopedState<CreateExpenseScreen> {
         child: Builder(builder: (context) {
           return _bloc.build((state) {
             return Padding(
-              padding: const EdgeInsets.all(8.0),
+              padding: const EdgeInsets.all(16.0),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -52,18 +52,37 @@ class _CreateExpenseScreenState extends ScopedState<CreateExpenseScreen> {
                       ],
                     ),
                   ),
-                  TextField(
-                    autofocus: true,
-                    decoration: InputDecoration(
-                      label: const Text("Name"),
-                      errorText: state.errors["name"],
-                    ),
-                    controller: _bloc.nameController,
-                    focusNode: _nameFocusNode,
-                    textInputAction: TextInputAction.next,
-                    onChanged: (text) {
-                      _bloc.getTagSuggestions(text);
-                    },
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          autofocus: true,
+                          decoration: InputDecoration(
+                            label: const Text("Name"),
+                            errorText: state.errors["name"],
+                            border: const OutlineInputBorder(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(10.0)),
+                            ),
+                          ),
+                          controller: _bloc.nameController,
+                          focusNode: _nameFocusNode,
+                          textInputAction: TextInputAction.next,
+                          onChanged: (text) {
+                            _bloc.getTagSuggestions(text);
+                          },
+                        ),
+                      ),
+                      // loading indicator
+                      if (state.isLoading)
+                        const Padding(
+                          padding: EdgeInsets.all(4.0),
+                          child: CircularProgressIndicator(),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(
+                    height: 10.0,
                   ),
                   TextField(
                       textInputAction: TextInputAction.next,
@@ -71,10 +90,16 @@ class _CreateExpenseScreenState extends ScopedState<CreateExpenseScreen> {
                       decoration: InputDecoration(
                         labelText: "Amount",
                         errorText: state.errors["amount"],
+                        border: const OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                        ),
                       ),
                       keyboardType: const TextInputType.numberWithOptions(
                         decimal: true,
                       )),
+                  const SizedBox(
+                    height: 10.0,
+                  ),
                   Focus(
                     onFocusChange: (hasFocus) {
                       if (hasFocus) {
@@ -94,9 +119,12 @@ class _CreateExpenseScreenState extends ScopedState<CreateExpenseScreen> {
                       controller: _bloc.dateController,
                       readOnly: true,
                       decoration: InputDecoration(
-                        labelText: "Date",
-                        errorText: state.errors["date"],
-                      ),
+                          labelText: "Date",
+                          errorText: state.errors["date"],
+                          border: const OutlineInputBorder(
+                            borderRadius:
+                                BorderRadius.all(Radius.circular(10.0)),
+                          )),
                     ),
                   ),
                   const SizedBox(
@@ -107,41 +135,63 @@ class _CreateExpenseScreenState extends ScopedState<CreateExpenseScreen> {
                     height: 10.0,
                   ),
                   const Text(
-                    "Suggestions",
+                    "Tags",
                   ),
                   const SizedBox(
                     height: 5.0,
                   ),
-                  Wrap(
-                    children: [
-                      for (final tag in state.tags)
-                        Padding(
-                          padding: const EdgeInsets.all(4.0),
-                          child: Tag(
-                            isSuggestion: tag.coincidences > 0,
-                            text: tag.name,
-                            onTap: (name) {
-                              _bloc.addTag(tag);
-                            },
-                            onLongPress: (name) {
-                              _bloc.addAllSuggestions();
-                            },
-                          ),
-                        ),
-                    ],
-                  ),
-                  const SizedBox(
-                    height: 10.0,
+                  Flexible(
+                    flex: 10,
+                    child: SingleChildScrollView(
+                      child: Wrap(
+                        children: [
+                          for (final tag in state.tags)
+                            Padding(
+                              padding: const EdgeInsets.all(4.0),
+                              child: Tag(
+                                isSuggestion: tag.isSuggestion,
+                                text: tag.name,
+                                onTap: (name) {
+                                  _bloc.addTag(tag);
+                                },
+                                onLongPress: (name) {},
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
                   ),
                   const Spacer(),
-                  ElevatedButton(
-                    onPressed: () async {
-                      final isCreated = await _bloc.addExpense();
-                      if (isCreated) {
-                        Navigator.pop(context);
-                      }
-                    },
-                    child: const Text("Add"),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () async {
+                            final isCreated = await _bloc.addExpense();
+                            if (isCreated) {
+                              Navigator.pop(context);
+                            }
+                          },
+                          child: const Text("Add"),
+                        ),
+                      ),
+                      const SizedBox(
+                        width: 10.0,
+                      ),
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () async {
+                            final isCreated = await _bloc.addExpense();
+                            if (isCreated) {
+                              Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) {
+                                return const CreateExpenseScreen();
+                              }));
+                            }
+                          },
+                          child: const Text("Continue adding")
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -178,6 +228,7 @@ class _CreateExpenseScreenState extends ScopedState<CreateExpenseScreen> {
                 Padding(
                   padding: const EdgeInsets.all(4.0),
                   child: Tag(
+                    isSuggestion: tag.isSuggestion,
                     text: tag.name,
                     onTap: (name) {
                       _bloc.removeTag(tag);

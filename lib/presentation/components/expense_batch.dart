@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:tagex/domain/expense/model/expense_model.dart';
 import 'package:tagex/presentation/components/expense.dart';
 
 class ExpenseBatch extends StatelessWidget {
@@ -9,26 +8,39 @@ class ExpenseBatch extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // convert date to human readable format e.g Monday, 12th July 2021
+    final date = expenses.first.date.toString().split(" ").first;
+    // get total amount
+    final totalAmount = expenses.fold(
+        0.0, (previousValue, element) => previousValue + element.amount);
     return Padding(
       padding: const EdgeInsets.all(8.0),
-      child: Column(
-        children: [
-          const Row(
+      child: Card(
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
             children: [
-              Text(
-                "Monday, 1st March 2021",
+              Row(
+                children: [
+                  Text(
+                    // convert date to human readable format
+                    date,
+                  ),
+                  const Spacer(),
+                  Text(
+                    "Total: \$${totalAmount.toStringAsFixed(2)}",
+                  ),
+                ],
               ),
-              Spacer(),
-              Text(
-                "\$1000",
+              const SizedBox(
+                height: 10,
+              ),
+              Column(
+                children: _buildExpenseList(expenses),
               ),
             ],
           ),
-          const Divider(),
-          Column(
-            children: _buildExpenseList(expenses),
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -43,4 +55,18 @@ class ExpenseBatch extends StatelessWidget {
             ))
         .toList();
   }
+}
+
+class ExpenseModel {
+  final String title;
+  final DateTime date;
+  final double amount;
+  final List<String> tags;
+
+  ExpenseModel({
+    required this.title,
+    required this.date,
+    required this.amount,
+    required this.tags,
+  });
 }

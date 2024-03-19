@@ -1,4 +1,4 @@
-import 'package:tagex/domain/expense/model/expense_model.dart';
+import 'package:tagex/presentation/components/expense_batch.dart';
 
 class HomeUiState {
   final List<ExpenseModel> expenses;
@@ -17,14 +17,14 @@ class HomeUiState {
 
   List<List<ExpenseModel>> _groupExpensesByDay(List<ExpenseModel> expenses) {
     final Map<String, List<ExpenseModel>> groupedMap = {};
-    expenses.forEach((expense) {
+    for (var expense in expenses) {
       final key = "${expense.date.day}/${expense.date.month}/${expense.date.year}";
       if (groupedMap.containsKey(key)) {
         groupedMap[key]!.add(expense);
       } else {
         groupedMap[key] = [expense];
       }
-    });
+    }
     print(groupedMap);
     return groupedMap.values.toList();
   }

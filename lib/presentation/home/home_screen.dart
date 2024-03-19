@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:scope_injector/flutter_scope.dart';
-import 'package:tagex/presentation/components/expense.dart';
 import 'package:tagex/presentation/components/expense_batch.dart';
 import 'package:tagex/presentation/create_expense_screen/create_expense_screen.dart';
-import 'package:tagex/presentation/home/di/home_di_module.dart';
+import 'package:tagex/presentation/get_report_dialog/get_report_dialog.dart';
 
 import 'bloc/home_bloc.dart';
 
@@ -24,66 +23,46 @@ class _HomeScreenState extends ScopedState<HomeScreen> {
         children: [
           Expanded(
             child: Scaffold(
+              appBar: AppBar(
+                title: const Text("Tagex"),
+              ),
+              drawer: Drawer(
+                child: ListView(
+                  padding: EdgeInsets.zero,
+                  children: <Widget>[
+                    const DrawerHeader(
+                      decoration: BoxDecoration(
+                        color: Colors.blue,
+                      ),
+                      child: Text('Drawer Header'),
+                    ),
+                    ListTile(
+                      title: const Text('Manage Tags'),
+                      onTap: () {
+                        // Update the state of the app.
+                        // ...
+                      },
+                    ),
+                    ListTile(
+                      title: const Text('AI report'),
+                      onTap: () {
+                        // Update the state of the app.
+                        // ...
+                      },
+                    ),
+                  ],
+                ),
+              ),
               body: SafeArea(
                 child: Column(
                   children: [
                     Padding(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 8.0,
-                        vertical: 4.0,
+                        horizontal: 16.0,
+                        vertical: 16.0,
                       ),
                       child: Column(
                         children: [
-                          Row(
-                            children: [
-                              Flexible(
-                                child: DropdownButtonFormField<String>(
-                                  value: "monthly",
-                                  items: const [
-                                    DropdownMenuItem(
-                                      child: Text("Monthly"),
-                                      value: "monthly",
-                                    ),
-                                    DropdownMenuItem(
-                                      child: Text("Weekly"),
-                                      value: "weekly",
-                                    ),
-                                    DropdownMenuItem(
-                                      child: Text("Fortnightly"),
-                                      value: "fortnightly",
-                                    ),
-                                  ],
-                                  onChanged: (value) {},
-                                ),
-                              ),
-                              const SizedBox(
-                                width: 8.0,
-                              ),
-                              Flexible(
-                                child: DropdownButtonFormField<String>(
-                                  items: const [
-                                    DropdownMenuItem(
-                                      child: Text("Monthly"),
-                                      value: "monthly",
-                                    ),
-                                    DropdownMenuItem(
-                                      child: Text("Weekly"),
-                                      value: "weekly",
-                                    ),
-                                    DropdownMenuItem(
-                                      child: Text("Fortnightly"),
-                                      value: "fortnightly",
-                                    ),
-                                  ],
-                                  onChanged: (value) {},
-                                ),
-                              ),
-                              TextButton(
-                                onPressed: () {},
-                                child: const Icon(Icons.manage_search_outlined),
-                              ),
-                            ],
-                          ),
                           Row(
                             children: [
                               const Spacer(),
@@ -121,25 +100,46 @@ class _HomeScreenState extends ScopedState<HomeScreen> {
               ),
               floatingActionButtonAnimator:
                   FloatingActionButtonAnimator.scaling,
-              floatingActionButton: FloatingActionButton(
-                onPressed: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) {
-                    return const CreateExpenseScreen();
-                  }));
-                },
-                tooltip: 'Add Expense',
-                child: const Icon(Icons.add),
+              floatingActionButton: Row(
+                children: [
+                  const Spacer(),
+                  FloatingActionButton(
+                    onPressed: () {
+                      _showModal(context, "Report");
+                    },
+                    tooltip: 'Generate Report',
+                    child: const Icon(Icons.add_chart),
+                  ),
+                  const SizedBox(
+                    width: 10.0,
+                  ),
+                  FloatingActionButton(
+                    onPressed: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (context) {
+                        return const CreateExpenseScreen();
+                      }));
+                    },
+                    tooltip: 'Add Expense',
+                    child: const Icon(Icons.add),
+                  ),
+                ],
               ),
             ),
           ),
-          const Placeholder(
-            fallbackHeight: 60,
-          )
         ],
       );
     });
   }
 
+  void _showModal(BuildContext context, String text) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return const ReportDialog();
+      }
+    );
+  }
+
   @override
-  List<Module> provideModules() => [HomeDiModule(this)];
+  List<Module> provideModules() => [];
 }

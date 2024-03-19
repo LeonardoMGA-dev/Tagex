@@ -1,4 +1,4 @@
-import 'package:tagex/data/expense/expense_repository.dart';
+import '../../components/tag.dart';
 
 class CreateExpenseUiState {
   final bool isLoading;

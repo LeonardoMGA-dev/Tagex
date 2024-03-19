@@ -16,7 +16,7 @@ class Tag extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = isSuggestion ? Colors.green : Colors.blue;
+    final color = isSuggestion ? Colors.green : Theme.of(context).colorScheme.secondary;
     return GestureDetector(
         onLongPress: () {
           if (onLongPress != null) {
@@ -31,11 +31,28 @@ class Tag extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.all(5),
           decoration: BoxDecoration(
-            color: Colors.white,
             borderRadius: BorderRadius.circular(5),
             border: Border.all(color: color),
           ),
           child: Text(text, style: TextStyle(color: color)),
         ));
   }
+}
+
+class TagModel {
+  final String name;
+  final bool isSuggestion;
+
+  // override hashCode and == for comparison
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is TagModel && other.name == name;
+  }
+
+  TagModel({required this.name, this.isSuggestion = false});
+
+  @override
+  int get hashCode => name.hashCode;
+
 }
