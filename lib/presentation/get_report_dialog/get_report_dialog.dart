@@ -21,7 +21,7 @@ class _ReportDialogState extends ScopedState<ReportDialog> {
         title: const Text('AI Report'),
         content: (state.report.isNotEmpty)
             ? SingleChildScrollView(child: Text(state.report))
-            : const CircularProgressIndicator(),
+            : const Center(child: CircularProgressIndicator()),
         actions: <Widget>[
           TextButton(
             onPressed: () {

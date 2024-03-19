@@ -26,33 +26,6 @@ class _HomeScreenState extends ScopedState<HomeScreen> {
               appBar: AppBar(
                 title: const Text("Tagex"),
               ),
-              drawer: Drawer(
-                child: ListView(
-                  padding: EdgeInsets.zero,
-                  children: <Widget>[
-                    const DrawerHeader(
-                      decoration: BoxDecoration(
-                        color: Colors.blue,
-                      ),
-                      child: Text('Drawer Header'),
-                    ),
-                    ListTile(
-                      title: const Text('Manage Tags'),
-                      onTap: () {
-                        // Update the state of the app.
-                        // ...
-                      },
-                    ),
-                    ListTile(
-                      title: const Text('AI report'),
-                      onTap: () {
-                        // Update the state of the app.
-                        // ...
-                      },
-                    ),
-                  ],
-                ),
-              ),
               body: SafeArea(
                 child: Column(
                   children: [

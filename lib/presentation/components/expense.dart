@@ -34,7 +34,7 @@ class Expense extends StatelessWidget {
               // convert date to human readable format only show hour and minute
               Text(date.split(" ").last.split(":").first +
                   ":" +
-                  date.split(" ").last.split(":").last.substring(0, 2)),
+                  date.split(" ").last.split(":").last),
               const Expanded(
                   child: Padding(
                 padding: EdgeInsets.symmetric(horizontal: 8.0),
